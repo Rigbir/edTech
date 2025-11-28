@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: edtech-postgres
+    environment:
+      POSTGRES_DB: edTech
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: edtech-redis
+    ports:
+      - "6379:6379"
+    command: >
+      sh -c "
+      if [ -n \"$$REDIS_PASSWORD\" ]; then
+        redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"
+      else
+        redis-server --appendonly yes
+      fi
+      "
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  cpp-core:
+    build:
+      context: ../../services/cpp_core
+      dockerfile: ../../infra/docker/Dockerfile
+    container_name: edtech-cpp-core
+    environment:
+      SERVER_PORT: 8000
+      SERVER_HOST: 0.0.0.0
+      
+      DATABASE_HOST: postgres       
+      DATABASE_PORT: 5432
+      DATABASE_NAME: edTech
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      
+      REDIS_HOST: redis             
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}          
+      
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
