@@ -9,7 +9,7 @@
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
-class TestProgressDto : public oatpp::DTO {
+class TestProgressDto: public oatpp::DTO {
     DTO_INIT(TestProgressDto, DTO)
 
     DTO_FIELD(String, id);

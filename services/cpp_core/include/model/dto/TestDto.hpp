@@ -11,7 +11,7 @@
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
-class TestDto : public oatpp::DTO {
+class TestDto: public oatpp::DTO {
     DTO_INIT(TestDto, DTO)
 
     DTO_FIELD(String, id);

@@ -9,7 +9,7 @@
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
-class UserStatisticsDto : public oatpp::DTO {
+class UserStatisticsDto: public oatpp::DTO {
     DTO_INIT(UserStatisticsDto, DTO)
 
     DTO_FIELD(String, subjectId);  // nullable (null = overall statistics)

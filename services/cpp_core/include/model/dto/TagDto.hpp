@@ -9,7 +9,7 @@
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
-class TagDto : public oatpp::DTO {
+class TagDto: public oatpp::DTO {
     DTO_INIT(TagDto, DTO)
 
     DTO_FIELD(String, id);
