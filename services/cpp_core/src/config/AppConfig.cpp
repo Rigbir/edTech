@@ -69,7 +69,9 @@ void AppConfig::loadFromEnvironment() {
     logLevel_ = getEnvOrDefault("LOG_LEVEL", "INFO");
 }
 
+// =========================    
 // Server configuration
+// =========================
 int AppConfig::getServerPort() const {
     return serverPort_;
 }
@@ -78,7 +80,9 @@ std::string AppConfig::getServerHost() const {
     return serverHost_;
 }
 
+// =========================
 // Database configuration
+// =========================
 std::string AppConfig::getDatabaseHost() const {
     return databaseHost_;
 }
@@ -105,7 +109,9 @@ std::string AppConfig::getDatabaseConnectionString() const {
            "/" + databaseName_;
 }
 
+// =========================
 // Redis configuration
+// =========================
 std::string AppConfig::getRedisHost() const {
     return redisHost_;
 }
@@ -118,7 +124,9 @@ std::string AppConfig::getRedisPassword() const {
     return redisPassword_;
 }
 
+// =========================
 // Logging configuration
+// =========================
 std::string AppConfig::getLogLevel() const {
     return logLevel_;
 }
