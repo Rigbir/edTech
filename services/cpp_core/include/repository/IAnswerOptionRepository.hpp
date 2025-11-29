@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <vector>
-#include <oatpp/core/Types.hpp>
 #include "model/entity/AnswerOptionEntity.hpp"
+#include <oatpp/core/Types.hpp>
+#include <vector>
 
 class IAnswerOptionRepository {
 public:

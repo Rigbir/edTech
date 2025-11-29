@@ -9,7 +9,15 @@
 #include "database/DatabaseClient.hpp"
 #include <memory>
 
-class AnswerOptionRepository: public IAnswerOptionRepository {
+/**
+ * AnswerOptionRepository - works with answer_options table
+ * 
+ * Purpose: Manages answer options for test questions. Retrieves options
+ *          by question ID and provides correct answer IDs for validation.
+ * 
+ * Dependencies: Depends on QuestionRepository (question_id FK).
+ */
+class AnswerOptionRepository final: public IAnswerOptionRepository {
 public:
     AnswerOptionRepository();
 
