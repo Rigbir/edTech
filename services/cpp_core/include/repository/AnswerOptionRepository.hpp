@@ -6,7 +6,6 @@
 
 #include "repository/IAnswerOptionRepository.hpp"
 #include <oatpp-postgresql/Executor.hpp>
-#include "database/DatabaseClient.hpp"
 #include <memory>
 
 /**

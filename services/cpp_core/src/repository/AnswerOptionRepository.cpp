@@ -3,6 +3,7 @@
 //
 
 #include "repository/AnswerOptionRepository.hpp"
+#include "database/DatabaseClient.hpp"
 #include "utils/EntityMapper.hpp"
 #include <stdexcept>
 

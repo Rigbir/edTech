@@ -24,7 +24,7 @@ namespace EntityMapper {
 
     QuestionEntity mapQuestion(
         const std::shared_ptr<oatpp::postgresql::ResultSet>& result,
-         size_t rowIndex = 0
+        size_t rowIndex = 0
     );
 
     SubjectEntity mapSubject(
@@ -34,7 +34,7 @@ namespace EntityMapper {
 
     TagEntity mapTag(
         const std::shared_ptr<oatpp::postgresql::ResultSet>& result,
-         size_t rowIndex = 0
+        size_t rowIndex = 0
     );
 
     TestEntity mapTest(
@@ -44,7 +44,7 @@ namespace EntityMapper {
 
     TestTagEntity mapTestTag(
         const std::shared_ptr<oatpp::postgresql::ResultSet>& result,
-         size_t rowIndex = 0
+        size_t rowIndex = 0
     );
 
     UserEntity mapUser(
@@ -54,7 +54,7 @@ namespace EntityMapper {
 
     UserStatisticsEntity mapUserStatistics(
         const std::shared_ptr<oatpp::postgresql::ResultSet>& result,
-         size_t rowIndex = 0
+        size_t rowIndex = 0
     );
     
     UserTestProgressEntity mapUserTestProgress(
