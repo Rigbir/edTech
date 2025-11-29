@@ -8,6 +8,13 @@
 #include <oatpp-postgresql/Executor.hpp>
 #include <memory>
 
+/**
+ * TagRepository - works with tags table
+ * 
+ * Purpose: Manages tags for tests. Retrieves tags by test ID.
+ * 
+ * Dependencies: None.
+ */
 class TagRepository final: public ITagRepository {
 public:
     TagRepository();

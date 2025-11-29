@@ -8,6 +8,13 @@
 #include <oatpp-postgresql/Executor.hpp>
 #include <memory>
 
+/** 
+ * SubjectRepository - works with subjects table
+ * 
+ * Purpose: Manages subjects for tests. Retrieves subjects by ID or test ID.
+ * 
+ * Dependencies: None.
+ */
 class SubjectRepository final: public ISubjectRepository {
 public:
     SubjectRepository();
