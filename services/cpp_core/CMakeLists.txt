@@ -150,7 +150,8 @@ file(GLOB_RECURSE HEADERS
 # Executable
 # ============================================
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS}
+        src/service/TestService.cpp)
 
 # Apply strict warnings only to our code (not dependencies)
 # In Debug mode, treat warnings as errors for our code
