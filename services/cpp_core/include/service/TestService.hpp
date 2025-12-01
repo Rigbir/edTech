@@ -71,16 +71,6 @@ private:
     );
 
     // ================================
-    // Helper methods for JSON
-    // ================================
-    std::string serializeToJson(const std::shared_ptr<TestDto>& dto);
-    std::shared_ptr<TestDto> deserializeFromJson(const std::string& json);
-    std::string serializeAnswersToJson(
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
-    );
-    std::string escapeJsonString(const std::string& str) const;
-
-    // ================================
     // Helper methods for answer checking
     // ================================
     struct AnswerCheckResult {
@@ -103,8 +93,6 @@ private:
         const oatpp::String& testId,
         const std::vector<QuestionEntity>& questions
     );
-
-    oatpp::Int64 getCurrentTimestamp() const;
     
     struct ScoreResult {
         int score;

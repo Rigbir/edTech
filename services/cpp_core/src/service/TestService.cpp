@@ -2,6 +2,7 @@
 // Created by Marat on 30.11.25.
 //
 
+#include "utils/JsonUtils.hpp"
 #include "service/TestService.hpp"
 #include "model/entity/TestEntity.hpp"
 #include "model/entity/SubjectEntity.hpp"
@@ -17,7 +18,6 @@
 #include "repository/UserTestProgressRepository.hpp"
 
 #include <set>
-#include <chrono>
 
 TestService::TestService()
     : testRepository_(std::make_unique<TestRepository>())
@@ -37,7 +37,7 @@ std::shared_ptr<TestDto> TestService::getTestById(const oatpp::String& id) {
     auto cachedJson = cache.getTest(id->c_str());
 
     if (cachedJson.has_value()) {
-        return deserializeFromJson(cachedJson.value());
+        return JsonUtils::deserializeFromJson<TestDto>(cachedJson.value(), jsonObjectMapper_);
     }
 
     auto test = testRepository_->getTestById(id);
@@ -53,7 +53,7 @@ std::shared_ptr<TestDto> TestService::getTestById(const oatpp::String& id) {
 
     auto dto = convertToDto(test, subject, questions, answerOptionsByQuestion, tags);
     
-    std::string json = serializeToJson(dto);
+    std::string json = JsonUtils::serializeToJson<TestDto>(dto, jsonObjectMapper_);
     cache.setTest(id->c_str(), json, 7200);
     
     return dto;
@@ -97,7 +97,7 @@ std::shared_ptr<TestResultDto> TestService::submitTest(
     auto questions = questionRepository_->getQuestionsByTestId(testId);
     auto checkResult = checkAnswers(testId, userAnswers);
     auto scoreResult = calculateScore(checkResult.correctCount, checkResult.totalCount);
-    std::string answersJson = serializeAnswersToJson(userAnswers);
+    std::string answersJson = JsonUtils::serializeAnswersToJson(userAnswers);
 
     UserTestProgressEntity progress;
     progress.userId = userId;
@@ -106,8 +106,8 @@ std::shared_ptr<TestResultDto> TestService::submitTest(
     progress.score = scoreResult.score;
     progress.percentage = scoreResult.percentage;
     progress.timeSpentSeconds = timeSpentSeconds;
-    progress.startedAt = getCurrentTimestamp();
-    progress.completedAt = getCurrentTimestamp();
+    progress.startedAt = JsonUtils::getCurrentTimestamp();
+    progress.completedAt = JsonUtils::getCurrentTimestamp();
     progress.answersJson = oatpp::String(answersJson.c_str());
 
     auto savedProgress = userTestProgressRepository_->saveProgress(progress);
@@ -223,68 +223,6 @@ std::shared_ptr<TestListDto> TestService::convertToListDto(
     return dto;
 }
 
-std::string TestService::serializeToJson(const std::shared_ptr<TestDto>& dto) {
-    return jsonObjectMapper_->writeToString(dto)->c_str();
-}
-
-std::shared_ptr<TestDto> TestService::deserializeFromJson(const std::string& json) {
-    return jsonObjectMapper_->readFromString<oatpp::Object<TestDto>>(
-        oatpp::String(json.c_str())
-    );
-}
-
-std::string TestService::serializeAnswersToJson(
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
-) {
-    std::string json = "{";
-    bool first = true;
-    
-    for (const auto& pair : userAnswers) {
-        if (!first) {
-            json += ",";
-        }
-        first = false;
-        
-        json += "\"" + escapeJsonString(pair.first->c_str()) + "\":";
-        
-        json += "[";
-        for (size_t i = 0; i < pair.second.size(); ++i) {
-            if (i > 0) {
-                json += ",";
-            }
-            json += "\"" + escapeJsonString(pair.second[i]->c_str()) + "\"";
-        }
-        json += "]";
-    }
-    
-    json += "}";
-    return json;
-}
-
-std::string TestService::escapeJsonString(const std::string& str) const {
-    std::string escaped;
-    escaped.reserve(str.size() * 2); 
-
-    for (char c : str) {
-        switch (c) {
-            case '"':
-                escaped += "\\\"";
-                break;
-            case '\\':
-                escaped += "\\\\";
-                break;
-            case '\n':
-                escaped += "\\n";
-                break;
-            default:
-                escaped += c;
-                break;
-        }
-    }
-
-    return escaped;
-}
-
 // ================================
 // Helper methods for answer checking
 // ================================
@@ -372,12 +310,6 @@ oatpp::Vector<oatpp::Object<QuestionDto>> TestService::getQuestionsWithCorrectAn
     }
     
     return questionDtos;
-}
-
-oatpp::Int64 TestService::getCurrentTimestamp() const {
-    return std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now().time_since_epoch()
-    ).count();
 }
 
 TestService::ScoreResult TestService::calculateScore(int correct, int total) {

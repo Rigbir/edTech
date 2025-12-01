@@ -16,6 +16,12 @@
 #include <oatpp-postgresql/ResultSet.hpp>
 #include <memory>
 
+/**
+ * EntityMapper - utility functions for mapping database entities to DTOs
+ * 
+ * Purpose: Provides utility functions for mapping database entities to DTOs.
+ *          Used by ProgressService to convert entities to DTOs.
+ */
 namespace EntityMapper {
     AnswerOptionEntity mapAnswerOption(
         const std::shared_ptr<oatpp::postgresql::ResultSet>& result, 

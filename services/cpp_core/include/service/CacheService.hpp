@@ -89,8 +89,6 @@ private:
                          const std::string& id1,
                          const std::string& id2) const;
 
-    std::string escapeJsonString(const std::string& str) const;
-
     // ================================
     // Helper methods for Redis operations
     // ================================

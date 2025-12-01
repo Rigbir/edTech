@@ -2,10 +2,9 @@
 // Created by Rigbir on 29.11.25.
 //
 
-#pragma once
-
 #include "service/CacheService.hpp"
 #include "config/AppConfig.hpp"
+#include "utils/JsonUtils.hpp"
 #include <stdexcept>
 
 CacheService::CacheService()
@@ -54,24 +53,6 @@ std::string CacheService::buildKey(const std::string& prefix,
                                    const std::string& id1,
                                    const std::string& id2) const {
     return prefix + ":" + id1 + ":" + id2;
-}
-
-std::string CacheService::escapeJsonString(const std::string& str) const {
-    std::string result;
-    result.reserve(str.length() + 10);
-
-    for (char c : str) {
-        switch (c) {
-            case '"':  result += "\\\""; break;
-            case '\\': result += "\\\\"; break;
-            case '\n': result += "\\n";  break;
-            case '\r': result += "\\r";  break;
-            case '\t': result += "\\t";  break;
-            default:   result += c;       break;
-        }
-    }
-
-    return result;
 }
 
 // ================================
@@ -209,7 +190,7 @@ void CacheService::setCorrectAnswer(const std::string& testId,
         if (i > 0) {
             jsonData += ",";
         }
-        jsonData += "\"" + escapeJsonString(answerIds[i]) + "\"";
+        jsonData += "\"" + JsonUtils::escapeJsonString(answerIds[i]) + "\"";
     }
     jsonData += "]";
 
