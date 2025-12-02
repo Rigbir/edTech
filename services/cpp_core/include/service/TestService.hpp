@@ -41,14 +41,14 @@ public:
     // ================================
     // Main methods
     // ================================
-    std::shared_ptr<TestDto> getTestById(const oatpp::String& id);
-    std::vector<std::shared_ptr<TestListDto>> getTestsBySubjectId(const oatpp::String& subjectId);
-    std::vector<std::shared_ptr<TestListDto>> getPublishedTests();
+    oatpp::Object<TestDto> getTestById(const oatpp::String& id);
+    std::vector<oatpp::Object<TestListDto>> getTestsBySubjectId(const oatpp::String& subjectId);
+    std::vector<oatpp::Object<TestListDto>> getPublishedTests();
 
-    std::shared_ptr<TestResultDto> submitTest(
+    oatpp::Object<TestResultDto> submitTest(
         const oatpp::String& userId,
         const oatpp::String& testId,
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+        const std::map<std::string, std::vector<std::string>>& userAnswers,
         int timeSpentSeconds
     );
 
@@ -56,7 +56,7 @@ private:
     // ================================
     // Helper methods for conversion
     // ================================
-    std::shared_ptr<TestDto> convertToDto(
+    oatpp::Object<TestDto> convertToDto(
         const TestEntity& testEntity,
         const SubjectEntity& subjectEntity,
         const std::vector<QuestionEntity>& questions,
@@ -64,7 +64,7 @@ private:
         const std::vector<TagEntity>& tags
     );
     
-    std::shared_ptr<TestListDto> convertToListDto(
+    oatpp::Object<TestListDto> convertToListDto(
         const TestEntity& testEntity,
         const SubjectEntity& subjectEntity,
         const std::vector<TagEntity>& tags
@@ -76,12 +76,12 @@ private:
     struct AnswerCheckResult {
         int correctCount;
         int totalCount;
-        std::map<oatpp::String, bool> questionResults;  // questionId -> isCorrect
+        std::map<std::string, bool> questionResults;  // questionId -> isCorrect
     };
     
     AnswerCheckResult checkAnswers(
         const oatpp::String& testId,
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
+        const std::map<std::string, std::vector<std::string>>& userAnswers
     );
 
     bool compareAnswers(

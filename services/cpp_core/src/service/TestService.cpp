@@ -32,7 +32,7 @@ TestService::TestService()
 // ================================
 // Main methods
 // ================================
-std::shared_ptr<TestDto> TestService::getTestById(const oatpp::String& id) {
+oatpp::Object<TestDto> TestService::getTestById(const oatpp::String& id) {
     auto& cache = CacheService::getInstance();
     auto cachedJson = cache.getTest(id->c_str());
 
@@ -59,11 +59,11 @@ std::shared_ptr<TestDto> TestService::getTestById(const oatpp::String& id) {
     return dto;
 }
 
-std::vector<std::shared_ptr<TestListDto>> TestService::getTestsBySubjectId(const oatpp::String& subjectId) {
+std::vector<oatpp::Object<TestListDto>> TestService::getTestsBySubjectId(const oatpp::String& subjectId) {
     auto tests = testRepository_->getTestsBySubjectId(subjectId);
     auto subject = subjectRepository_->getSubjectById(subjectId);
 
-    std::vector<std::shared_ptr<TestListDto>> dtoList;
+    std::vector<oatpp::Object<TestListDto>> dtoList;
     for (const auto& test : tests) {
         auto tags = tagRepository_->getTagsByTestId(test.id);
         auto dto = convertToListDto(test, subject, tags);
@@ -73,10 +73,10 @@ std::vector<std::shared_ptr<TestListDto>> TestService::getTestsBySubjectId(const
     return dtoList;
 }
 
-std::vector<std::shared_ptr<TestListDto>> TestService::getPublishedTests() {
+std::vector<oatpp::Object<TestListDto>> TestService::getPublishedTests() {
     auto tests = testRepository_->getPublishedTests();
 
-    std::vector<std::shared_ptr<TestListDto>> dtoList;
+    std::vector<oatpp::Object<TestListDto>> dtoList;
     for (const auto& test : tests) {
         auto subject = subjectRepository_->getSubjectById(test.subjectId);
         auto tags = tagRepository_->getTagsByTestId(test.id);
@@ -88,10 +88,10 @@ std::vector<std::shared_ptr<TestListDto>> TestService::getPublishedTests() {
     return dtoList;
 }
 
-std::shared_ptr<TestResultDto> TestService::submitTest(
+oatpp::Object<TestResultDto> TestService::submitTest(
     const oatpp::String& userId,
     const oatpp::String& testId,
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+    const std::map<std::string, std::vector<std::string>>& userAnswers,
     int timeSpentSeconds
 ) {
     auto questions = questionRepository_->getQuestionsByTestId(testId);
@@ -130,7 +130,7 @@ std::shared_ptr<TestResultDto> TestService::submitTest(
 // ================================
 // Helper methods for conversion
 // ================================
-std::shared_ptr<TestDto> TestService::convertToDto(
+oatpp::Object<TestDto> TestService::convertToDto(
     const TestEntity& testEntity,
     const SubjectEntity& subjectEntity,
     const std::vector<QuestionEntity>& questions,
@@ -157,7 +157,7 @@ std::shared_ptr<TestDto> TestService::convertToDto(
         tagDto->id = tag.id;
         tagDto->name = tag.name;
         tagDto->color = tag.color;
-        tagDtos->pushBack(tagDto);
+        tagDtos->push_back(tagDto);
     }
     dto->tags = tagDtos;
 
@@ -181,18 +181,18 @@ std::shared_ptr<TestDto> TestService::convertToDto(
                 optionDto->id = option.id;
                 optionDto->optionText = option.optionText;
                 optionDto->displayOrder = option.displayOrder;
-                answerOptionDtos->pushBack(optionDto);
+                answerOptionDtos->push_back(optionDto);
             }
         }
         questionDto->answerOptions = answerOptionDtos;
-        questionDtos->pushBack(questionDto);
+        questionDtos->push_back(questionDto);
     }
     dto->questions = questionDtos;
 
     return dto;
 }
 
-std::shared_ptr<TestListDto> TestService::convertToListDto(
+oatpp::Object<TestListDto> TestService::convertToListDto(
     const TestEntity& testEntity,
     const SubjectEntity& subjectEntity,
     const std::vector<TagEntity>& tags
@@ -216,7 +216,7 @@ std::shared_ptr<TestListDto> TestService::convertToListDto(
         tagDto->id = tag.id;
         tagDto->name = tag.name;
         tagDto->color = tag.color;
-        tagDtos->pushBack(tagDto);
+        tagDtos->push_back(tagDto);
     }
     dto->tags = tagDtos;
     
@@ -228,7 +228,7 @@ std::shared_ptr<TestListDto> TestService::convertToListDto(
 // ================================
 TestService::AnswerCheckResult TestService::checkAnswers(
     const oatpp::String& testId,
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
+    const std::map<std::string, std::vector<std::string>>& userAnswers
 ) {
     auto questions = questionRepository_->getQuestionsByTestId(testId);
 
@@ -238,15 +238,18 @@ TestService::AnswerCheckResult TestService::checkAnswers(
 
     for (const auto& question : questions) {
         auto correctAnswerIds = answerOptionRepository_->getCorrectAnswerIds(question.id);
-        auto userAnswerIt = userAnswers.find(question.id);
+        std::string questionIdStr = question.id->c_str();
+        auto userAnswerIt = userAnswers.find(questionIdStr);
 
         std::vector<oatpp::String> userAnswerIds;
         if (userAnswerIt != userAnswers.end()) {
-            userAnswerIds = userAnswerIt->second;
+            for (const auto& answerId : userAnswerIt->second) {
+                userAnswerIds.push_back(oatpp::String(answerId.c_str()));
+            }
         }
 
         bool isCorrect = compareAnswers(correctAnswerIds, userAnswerIds);
-        result.questionResults[question.id] = isCorrect;
+        result.questionResults[question.id->c_str()] = isCorrect;
 
         if (isCorrect) {
             ++result.correctCount;
@@ -302,11 +305,11 @@ oatpp::Vector<oatpp::Object<QuestionDto>> TestService::getQuestionsWithCorrectAn
             optionDto->optionText = option.optionText;
             optionDto->displayOrder = option.displayOrder;
             optionDto->isCorrect = option.isCorrect;  
-            answerOptionDtos->pushBack(optionDto);
+            answerOptionDtos->push_back(optionDto);
         }
         
         questionDto->answerOptions = answerOptionDtos;
-        questionDtos->pushBack(questionDto);
+        questionDtos->push_back(questionDto);
     }
     
     return questionDtos;

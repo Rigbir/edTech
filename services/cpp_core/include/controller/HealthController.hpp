@@ -25,10 +25,12 @@ public:
     HealthController(const std::shared_ptr<ObjectMapper>& objectMapper);
 
 public:
-    ENDPOINT("GET", "/health", health);
+    ENDPOINT("GET", "/health", health) {
+        return createDtoResponse(Status::CODE_200, healthImpl());
+    }
 
 private:
-    std::shared_ptr<HealthDto> health();
+    oatpp::Object<HealthDto> healthImpl();
 };
 
 #include OATPP_CODEGEN_END(ApiController)

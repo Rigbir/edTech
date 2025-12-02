@@ -21,6 +21,16 @@
 #include <vector>
 #include <map>
 
+/**
+ * TestController - works with tests
+ * 
+ * Purpose: Provides access to tests. Retrieves tests by ID, by subject,
+ *          and published tests. This is the main controller that combines
+ *          data from other controllers (TestService, ProgressService).
+ * 
+ * Dependencies: Depends on TestService (test_id FK).
+ *               Used by TestController to build complete test structure.
+ */
 #include OATPP_CODEGEN_BEGIN(ApiController)
 
 class TestController: public oatpp::web::server::api::ApiController {
@@ -28,55 +38,79 @@ public:
     TestController(const std::shared_ptr<ObjectMapper>& objectMapper);
 
 public:
-    ENDPOINT("GET", "/api/tests/{testId}", getTestById, PATH(String, testId));
-    ENDPOINT("GET", "/api/tests", getTestsBySubjectId, QUERY(String, subjectId));
-    ENDPOINT("GET", "/api/tests/published", getPublishedTests);
+    ENDPOINT("GET", "/api/tests/{testId}", getTestById, PATH(String, testId)) {
+        return createDtoResponse(Status::CODE_200, getTestByIdImpl(testId));
+    }
+    ENDPOINT("GET", "/api/tests", getTestsBySubjectId, QUERY(String, subjectId)) {
+        auto dtos = getTestsBySubjectIdImpl(subjectId);
+        auto result = oatpp::Vector<oatpp::Object<TestListDto>>::createShared();
+        for (const auto& dto : dtos) {
+            result->push_back(dto);
+        }
+        return createDtoResponse(Status::CODE_200, result);
+    }
+    ENDPOINT("GET", "/api/tests/published", getPublishedTests) {
+        auto dtos = getPublishedTestsImpl();
+        auto result = oatpp::Vector<oatpp::Object<TestListDto>>::createShared();
+        for (const auto& dto : dtos) {
+            result->push_back(dto);
+        }
+        return createDtoResponse(Status::CODE_200, result);
+    }
 
     ENDPOINT("POST", "/api/tests/{testId}/submit", submitTest,
         PATH(String, testId),
-        BODY_DTO(Object<SubmitTestRequestDto>, body));
+        BODY_DTO(Object<SubmitTestRequestDto>, body)) {
+        return createDtoResponse(Status::CODE_200, submitTestImpl(testId, body));
+    }
 
     ENDPOINT("POST", "/api/tests/{testId}/progress", saveTestProgress,
         PATH(String, testId),
-        BODY_DTO(Object<SaveProgressRequestDto>, body));
+        BODY_DTO(Object<SaveProgressRequestDto>, body)) {
+        return createDtoResponse(Status::CODE_200, saveTestProgressImpl(testId, body));
+    }
     ENDPOINT("GET", "/api/tests/{testId}/progress", getTestProgress,
         PATH(String, testId),
-        QUERY(String, userId));
+        QUERY(String, userId)) {
+        return createDtoResponse(Status::CODE_200, getTestProgressImpl(userId, testId));
+    }
     ENDPOINT("PUT", "/api/tests/{testId}/progress/{progressId}", updateTestProgress,
         PATH(String, testId),
         PATH(String, progressId),
-        BODY_DTO(Object<UpdateProgressRequestDto>, body));
+        BODY_DTO(Object<UpdateProgressRequestDto>, body)) {
+        return createDtoResponse(Status::CODE_200, updateTestProgressImpl(testId, progressId, body));
+    }
 
 private:
     // ================================
     // Test methods
     // ================================
-    std::shared_ptr<TestDto> getTestById(const oatpp::String& testId);
-    std::vector<std::shared_ptr<TestListDto>> getTestsBySubjectId(const oatpp::String& subjectId);
-    std::vector<std::shared_ptr<TestListDto>> getPublishedTests();
-    std::shared_ptr<TestResultDto> submitTest(
+    oatpp::Object<TestDto> getTestByIdImpl(const oatpp::String& testId);
+    std::vector<oatpp::Object<TestListDto>> getTestsBySubjectIdImpl(const oatpp::String& subjectId);
+    std::vector<oatpp::Object<TestListDto>> getPublishedTestsImpl();
+    oatpp::Object<TestResultDto> submitTestImpl(
         const oatpp::String& testId,
-        const std::shared_ptr<SubmitTestRequestDto>& body
+        const oatpp::Object<SubmitTestRequestDto>& body
     );
 
     // ================================
     // Progress methods
     // ================================
-    std::shared_ptr<TestProgressDto> saveTestProgress(
+    oatpp::Object<TestProgressDto> saveTestProgressImpl(
         const oatpp::String& testId,
-        const std::shared_ptr<SaveProgressRequestDto>& body
+        const oatpp::Object<SaveProgressRequestDto>& body
     );
-    std::shared_ptr<TestProgressDto> getTestProgress(
+    oatpp::Object<TestProgressDto> getTestProgressImpl(
         const oatpp::String& userId,
         const oatpp::String& testId
     );
-    std::shared_ptr<TestProgressDto> updateTestProgress(
+    oatpp::Object<TestProgressDto> updateTestProgressImpl(
         const oatpp::String& testId,
         const oatpp::String& progressId,
-        const std::shared_ptr<UpdateProgressRequestDto>& body
+        const oatpp::Object<UpdateProgressRequestDto>& body
     );
 
-    std::map<oatpp::String, std::vector<oatpp::String>> parseAnswers(
+    std::map<std::string, std::vector<std::string>> parseAnswers(
         const oatpp::String& answersJson
     );
 

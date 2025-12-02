@@ -5,7 +5,7 @@
 #pragma once
 
 #include "repository/ITagRepository.hpp"
-#include <oatpp-postgresql/Executor.hpp>
+#include "database/TagDb.hpp"
 #include <memory>
 
 /**
@@ -25,5 +25,5 @@ public:
         const oatpp::String& testId
     ) override;
 private:
-    std::shared_ptr<oatpp::postgresql::Executor> executor_;
+    std::shared_ptr<TagDb> dbClient_;
 };

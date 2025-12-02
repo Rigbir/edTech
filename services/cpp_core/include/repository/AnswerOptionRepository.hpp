@@ -5,7 +5,7 @@
 #pragma once
 
 #include "repository/IAnswerOptionRepository.hpp"
-#include <oatpp-postgresql/Executor.hpp>
+#include "database/AnswerOptionDb.hpp"
 #include <memory>
 
 /**
@@ -33,5 +33,5 @@ public:
     ) override;
 
 private:
-    std::shared_ptr<oatpp::postgresql::Executor> executor_;
+    std::shared_ptr<AnswerOptionDb> dbClient_;
 };

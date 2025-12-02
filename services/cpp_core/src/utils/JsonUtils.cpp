@@ -38,7 +38,7 @@ std::string escapeJsonString(const std::string& str) {
 }
 
 std::string serializeAnswersToJson(
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
+    const std::map<std::string, std::vector<std::string>>& userAnswers
 ) {
     std::string json = "{";
     bool first = true;
@@ -49,14 +49,14 @@ std::string serializeAnswersToJson(
         }
         first = false;
         
-        json += "\"" + escapeJsonString(questionId->c_str()) + "\":";
+        json += "\"" + escapeJsonString(questionId) + "\":";
         
         json += "[";
         for (size_t i = 0; i < answerIds.size(); ++i) {
             if (i > 0) {
                 json += ",";
             }
-            json += "\"" + escapeJsonString(answerIds[i]->c_str()) + "\"";
+            json += "\"" + escapeJsonString(answerIds[i]) + "\"";
         }
         json += "]";
     }

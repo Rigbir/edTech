@@ -8,28 +8,24 @@
 #include <stdexcept>
 
 AnswerOptionRepository::AnswerOptionRepository()
-    : executor_(DatabaseClient::getInstance().getExecutor()) 
+    : dbClient_(std::make_shared<AnswerOptionDb>(
+          DatabaseClient::getInstance().getExecutor()
+      ))
 {
-    if (!executor_) {
-        throw std::runtime_error("Failed to initialize executor");
+    if (!dbClient_) {
+        throw std::runtime_error("Failed to initialize AnswerOptionDb");
     }
 }
 
 std::vector<AnswerOptionEntity> AnswerOptionRepository::getAnswerOptionsByQuestionId(
     const oatpp::String& questionId
 ) {
-    auto result = executor_->execute(
-        "SELECT id, question_id, option_text, is_correct, display_order, "
-        "EXTRACT(EPOCH FROM created_at)::bigint as created_at "
-        "FROM answer_options WHERE question_id = $1 ORDER BY display_order ASC",
-        {questionId}
-    );
-
+    auto queryResult = dbClient_->getAnswerOptionsByQuestionId(questionId);
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     std::vector<AnswerOptionEntity> entities;
-    auto rows = result->fetch();
-
     for (size_t i = 0; i < rows->size(); ++i) {
-        entities.push_back(EntityMapper::mapAnswerOption(result, i));
+        entities.push_back(EntityMapper::mapAnswerOption(rows, i));
     }
 
     return entities;
@@ -38,35 +34,26 @@ std::vector<AnswerOptionEntity> AnswerOptionRepository::getAnswerOptionsByQuesti
 AnswerOptionEntity AnswerOptionRepository::getAnswerOptionById(
     const oatpp::String& id
 ) {
-    auto result = executor_->execute(
-        "SELECT id, question_id, option_text, is_correct, display_order, "
-        "EXTRACT(EPOCH FROM created_at)::bigint as created_at "
-        "FROM answer_options WHERE id = $1",
-        {id}
-    );
-
-    auto rows = result->fetch();
+    auto queryResult = dbClient_->getAnswerOptionById(id);
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     if (!rows || rows->size() == 0) {
         throw std::runtime_error("Answer option not found");
     }
 
-    return EntityMapper::mapAnswerOption(result, 0);
+    return EntityMapper::mapAnswerOption(rows, 0);
 }
 
 std::vector<oatpp::String> AnswerOptionRepository::getCorrectAnswerIds(
     const oatpp::String& questionId
 ) {
-    auto result = executor_->execute(
-        "SELECT id FROM answer_options WHERE question_id = $1 AND is_correct = TRUE",
-        {questionId}
-    );
-
+    auto queryResult = dbClient_->getCorrectAnswerIds(questionId);
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     std::vector<oatpp::String> ids;
-    auto rows = result->fetch();
-
     for (size_t i = 0; i < rows->size(); ++i) {
-        auto row = rows->get(i);
-        ids.push_back(row->get(0)->toString());
+        auto row = rows[i];
+        ids.push_back(row["id"].retrieve<oatpp::String>());
     }
 
     return ids;

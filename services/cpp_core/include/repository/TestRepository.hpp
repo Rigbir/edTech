@@ -5,7 +5,7 @@
 #pragma once
 
 #include "repository/ITestRepository.hpp"
-#include <oatpp-postgresql/Executor.hpp>
+#include "database/TestDb.hpp"
 #include <memory>
 
 /**
@@ -33,5 +33,5 @@ public:
     std::vector<TestEntity> getPublishedTests() override;
 
 private:
-    std::shared_ptr<oatpp::postgresql::Executor> executor_;
+    std::shared_ptr<TestDb> dbClient_;
 };

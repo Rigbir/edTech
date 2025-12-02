@@ -6,11 +6,14 @@
 
 #include <memory>
 #include "config/AppConfig.hpp"
-#include <oatpp-postgresql/Executor.hpp>
-#include <oatpp-postgresql/ConnectionProvider.hpp>
+#include <oatpp-postgresql/orm.hpp>
 
-// Singleton class for database client
-// Initializes the database connection and executor
+/**
+ * DatabaseClient - works with database
+ * 
+ * Purpose: Manages the database connection and executor.
+ *          Used by repositories to execute queries.
+ */
 class DatabaseClient {
 public:
     static DatabaseClient& getInstance();

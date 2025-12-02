@@ -5,7 +5,7 @@
 #pragma once
 
 #include "repository/IUserTestProgressRepository.hpp"
-#include <oatpp-postgresql/Executor.hpp>
+#include "database/UserTestProgressDb.hpp"
 #include <memory>
 
 /**
@@ -41,5 +41,5 @@ public:
     ) override;
 
 private:
-    std::shared_ptr<oatpp::postgresql::Executor> executor_;
+    std::shared_ptr<UserTestProgressDb> dbClient_;
 };

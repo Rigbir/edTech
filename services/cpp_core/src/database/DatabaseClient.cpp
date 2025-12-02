@@ -4,6 +4,7 @@
 
 #include "database/DatabaseClient.hpp"
 #include <string>
+#include <chrono>
 
 DatabaseClient::DatabaseClient() {
     initialize();
@@ -15,15 +16,21 @@ DatabaseClient& DatabaseClient::getInstance() {
 }
 
 void DatabaseClient::initialize() {
-    auto config = AppConfig::getInstance();
+    auto& config = AppConfig::getInstance();
     auto connectionString = config.getDatabaseConnectionString();
 
     connectionProvider_ = std::make_shared<oatpp::postgresql::ConnectionProvider>(
         connectionString
     );
 
+    auto connectionPool = oatpp::postgresql::ConnectionPool::createShared(
+        connectionProvider_,
+        10, 
+        std::chrono::seconds(5) 
+    );
+
     executor_ = std::make_shared<oatpp::postgresql::Executor>(
-        connectionProvider_
+        connectionPool
     );
 }
 

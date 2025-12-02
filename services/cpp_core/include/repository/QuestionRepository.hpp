@@ -5,7 +5,7 @@
 #pragma once
 
 #include "repository/IQuestionRepository.hpp"
-#include <oatpp-postgresql/Executor.hpp>
+#include "database/QuestionDb.hpp"
 #include <memory>
 
 /**
@@ -30,5 +30,5 @@ public:
     ) override;
 
 private:
-    std::shared_ptr<oatpp::postgresql::Executor> executor_;
+    std::shared_ptr<QuestionDb> dbClient_;
 };

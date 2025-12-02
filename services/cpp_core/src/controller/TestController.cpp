@@ -13,21 +13,21 @@ TestController::TestController(const std::shared_ptr<ObjectMapper>& objectMapper
 // ================================
 // Test methods
 // ================================
-std::shared_ptr<TestDto> TestController::getTestById(const oatpp::String& testId) {
+oatpp::Object<TestDto> TestController::getTestByIdImpl(const oatpp::String& testId) {
     return testService_->getTestById(testId);
 }
 
-std::vector<std::shared_ptr<TestListDto>> TestController::getTestsBySubjectId(const oatpp::String& subjectId) {
+std::vector<oatpp::Object<TestListDto>> TestController::getTestsBySubjectIdImpl(const oatpp::String& subjectId) {
     return testService_->getTestsBySubjectId(subjectId);
 }
 
-std::vector<std::shared_ptr<TestListDto>> TestController::getPublishedTests() {
+std::vector<oatpp::Object<TestListDto>> TestController::getPublishedTestsImpl() {
     return testService_->getPublishedTests();
 }
 
-std::shared_ptr<TestResultDto> TestController::submitTest(
+oatpp::Object<TestResultDto> TestController::submitTestImpl(
     const oatpp::String& testId,
-    const std::shared_ptr<SubmitTestRequestDto>& body
+    const oatpp::Object<SubmitTestRequestDto>& body
 ) {
     auto answers = parseAnswers(body->answers);
     return testService_->submitTest(
@@ -41,9 +41,9 @@ std::shared_ptr<TestResultDto> TestController::submitTest(
 // ================================
 // Progress methods
 // ================================
-std::shared_ptr<TestProgressDto> TestController::saveTestProgress(
+oatpp::Object<TestProgressDto> TestController::saveTestProgressImpl(
     const oatpp::String& testId,
-    const std::shared_ptr<SaveProgressRequestDto>& body
+    const oatpp::Object<SaveProgressRequestDto>& body
 ) {
     auto answers = parseAnswers(body->answers);
     return progressService_->saveProgress(
@@ -54,17 +54,17 @@ std::shared_ptr<TestProgressDto> TestController::saveTestProgress(
     );
 }
 
-std::shared_ptr<TestProgressDto> TestController::getTestProgress(
+oatpp::Object<TestProgressDto> TestController::getTestProgressImpl(
     const oatpp::String& userId,
     const oatpp::String& testId
 ) {
     return progressService_->getProgress(userId, testId);
 }
 
-std::shared_ptr<TestProgressDto> TestController::updateTestProgress(
+oatpp::Object<TestProgressDto> TestController::updateTestProgressImpl(
     const oatpp::String& testId,
     const oatpp::String& progressId,
-    const std::shared_ptr<UpdateProgressRequestDto>& body
+    const oatpp::Object<UpdateProgressRequestDto>& body
 ) {
     auto answers = parseAnswers(body->answers);
     return progressService_->updateProgress(
@@ -74,30 +74,38 @@ std::shared_ptr<TestProgressDto> TestController::updateTestProgress(
     );
 }
 
-std::map<oatpp::String, std::vector<oatpp::String>> TestController::parseAnswers(
+std::map<std::string, std::vector<std::string>> TestController::parseAnswers(
     const oatpp::String& answersJson
 ) {
-    auto objectMapper = getDefaultObjectMapper();
+    std::map<std::string, std::vector<std::string>> result;
     
-    auto json = objectMapper->readFromString<oatpp::Any>(answersJson);
+    if (!answersJson || answersJson->empty()) {
+        return result;
+    }
     
-    std::map<oatpp::String, std::vector<oatpp::String>> result;
-    
-    if (json.getType() == oatpp::Any::Type::MAP) {
-        auto map = json.cast<oatpp::Fields<oatpp::Any>>();
-        for (const auto& pair : *map) {
-            oatpp::String questionId = pair.first;
-            oatpp::Any answerArray = pair.second;
-            
-            std::vector<oatpp::String> answerIds;
-            if (answerArray.getType() == oatpp::Any::Type::VECTOR) {
-                auto vec = answerArray.cast<oatpp::Vector<oatpp::String>>();
-                for (const auto& answerId : *vec) {
-                    answerIds.push_back(answerId);
+    try {
+        auto objectMapper = getDefaultObjectMapper();
+        auto parsedMap = objectMapper->readFromString<oatpp::UnorderedMap<oatpp::String, oatpp::Vector<oatpp::String>>>(
+            answersJson
+        );
+        
+        if (parsedMap) {
+            for (const auto& pair : *parsedMap) {
+                std::vector<std::string> answerIds;
+                if (pair.second) {
+                    for (const auto& answerId : *pair.second) {
+                        if (answerId) {
+                            answerIds.push_back(answerId->c_str());
+                        }
+                    }
+                }
+                if (pair.first) {
+                    result[pair.first->c_str()] = answerIds;
                 }
             }
-            result[questionId] = answerIds;
         }
+    } catch (const std::exception& e) {
+        return {};
     }
     
     return result;

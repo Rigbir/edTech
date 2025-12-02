@@ -26,7 +26,7 @@ public:
     // ================================
     // Work with tests
     // ================================
-    std::optional<std::string> getTest(const std::string& testId);
+    std::optional<std::string> getTest(const std::string& testId) const;
     void setTest(const std::string& testId,
                  const std::string& jsonData,
                  int ttlSeconds = 7200) const;

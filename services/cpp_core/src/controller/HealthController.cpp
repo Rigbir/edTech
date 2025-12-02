@@ -10,7 +10,7 @@ HealthController::HealthController(const std::shared_ptr<ObjectMapper>& objectMa
     : oatpp::web::server::api::ApiController(objectMapper)
 {}
 
-std::shared_ptr<HealthDto> HealthController::health() {
+oatpp::Object<HealthDto> HealthController::healthImpl() {
     auto dto = HealthDto::createShared();
 
     auto& dbClient = DatabaseClient::getInstance();

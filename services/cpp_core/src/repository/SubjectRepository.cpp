@@ -8,26 +8,22 @@
 #include <stdexcept>
 
 SubjectRepository::SubjectRepository()
-    : executor_(DatabaseClient::getInstance().getExecutor())
+    : dbClient_(std::make_shared<SubjectDb>(
+          DatabaseClient::getInstance().getExecutor()
+      ))
 {
-    if (!executor_) {
-        throw std::runtime_error("Failed to initialize executor");
+    if (!dbClient_) {
+        throw std::runtime_error("Failed to initialize SubjectDb");
     }
 }
 
 std::vector<SubjectEntity> SubjectRepository::getSubjects() {
-    auto result = executor_->execute(
-        "SELECT id, name, description, icon_url, color, display_order, is_active, "
-        "EXTRACT(EPOCH FROM created_at)::bigint as created_at, "
-        "EXTRACT(EPOCH FROM updated_at)::bigint as updated_at "
-        "FROM subjects WHERE is_active = TRUE ORDER BY display_order ASC"
-    );
-
+    auto queryResult = dbClient_->getSubjects();
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     std::vector<SubjectEntity> entities;
-    auto rows = result->fetch();
-
     for (size_t i = 0; i < rows->size(); ++i) {
-        entities.push_back(EntityMapper::mapSubject(result, i));
+        entities.push_back(EntityMapper::mapSubject(rows, i));
     }
 
     return entities;
@@ -36,40 +32,25 @@ std::vector<SubjectEntity> SubjectRepository::getSubjects() {
 SubjectEntity SubjectRepository::getSubjectById(
     const oatpp::String& id
 ) {
-    auto result = executor_->execute(
-        "SELECT id, name, description, icon_url, color, display_order, is_active, "
-        "EXTRACT(EPOCH FROM created_at)::bigint as created_at, "
-        "EXTRACT(EPOCH FROM updated_at)::bigint as updated_at "
-        "FROM subjects WHERE id = $1 AND is_active = TRUE",
-        {id}
-    );
-
-    auto rows = result->fetch();
+    auto queryResult = dbClient_->getSubjectById(id);
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     if (!rows || rows->size() == 0) {
         throw std::runtime_error("Subject not found");
     }
 
-    return EntityMapper::mapSubject(result, 0);
+    return EntityMapper::mapSubject(rows, 0);
 }
 
 std::vector<SubjectEntity> SubjectRepository::getSubjectsByTestId(
     const oatpp::String& testId
 ) {
-    auto result = executor_->execute(
-        "SELECT s.id, s.name, s.description, s.icon_url, s.color, s.display_order, s.is_active, "
-        "EXTRACT(EPOCH FROM s.created_at)::bigint as created_at, "
-        "EXTRACT(EPOCH FROM s.updated_at)::bigint as updated_at "
-        "FROM subjects s "
-        "INNER JOIN tests t ON t.subject_id = s.id "
-        "WHERE t.id = $1 AND s.is_active = TRUE",
-        {testId}
-    );
-
+    auto queryResult = dbClient_->getSubjectsByTestId(testId);
+    auto rows = queryResult->fetch<oatpp::Vector<oatpp::Fields<oatpp::Any>>>();
+    
     std::vector<SubjectEntity> entities;
-    auto rows = result->fetch();
-
     for (size_t i = 0; i < rows->size(); ++i) {
-        entities.push_back(EntityMapper::mapSubject(result, i));
+        entities.push_back(EntityMapper::mapSubject(rows, i));
     }
 
     return entities;

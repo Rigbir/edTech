@@ -24,23 +24,26 @@
  */
 class ProgressService {
 public:
-    std::shared_ptr<TestProgressDto> saveProgress(
+    oatpp::Object<TestProgressDto> saveProgress(
         const oatpp::String& userId,
         const oatpp::String& testId,
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+        const std::map<std::string, std::vector<std::string>>& userAnswers,
         int timeSpentSeconds
     );
 
-    std::shared_ptr<TestProgressDto> getProgress(
+    oatpp::Object<TestProgressDto> getProgress(
         const oatpp::String& userId,
         const oatpp::String& testId
     );
 
-    std::shared_ptr<TestProgressDto> updateProgress(
+    oatpp::Object<TestProgressDto> updateProgress(
         const oatpp::String& progressId,
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+        const std::map<std::string, std::vector<std::string>>& userAnswers,
         int timeSpentSeconds
     );
+
+private:
+    oatpp::Object<TestProgressDto> convertToDto(const UserTestProgressEntity& entity);
 
 private:
     std::unique_ptr<UserTestProgressRepository> userTestProgressRepository_;

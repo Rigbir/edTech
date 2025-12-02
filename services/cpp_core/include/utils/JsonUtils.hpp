@@ -25,7 +25,7 @@ namespace JsonUtils {
     std::string escapeJsonString(const std::string& str);
     
     std::string serializeAnswersToJson(
-        const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers
+        const std::map<std::string, std::vector<std::string>>& userAnswers
     );
 
     // ================================
@@ -33,14 +33,14 @@ namespace JsonUtils {
     // ================================
     template<typename T>
     std::string serializeToJson(
-        const std::shared_ptr<T>& dto,
+        const oatpp::Object<T>& dto,
         const std::shared_ptr<oatpp::parser::json::mapping::ObjectMapper>& objectMapper
     ) {
         return objectMapper->writeToString(dto)->c_str();
     }
 
     template<typename T>
-    std::shared_ptr<T> deserializeFromJson(
+    oatpp::Object<T> deserializeFromJson(
         const std::string& json,
         const std::shared_ptr<oatpp::parser::json::mapping::ObjectMapper>& objectMapper
     ) {

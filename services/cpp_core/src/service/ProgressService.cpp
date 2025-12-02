@@ -5,11 +5,12 @@
 #include "utils/JsonUtils.hpp"
 #include "service/ProgressService.hpp"
 #include "model/entity/UserTestProgressEntity.hpp"
+#include "model/dto/TestProgressDto.hpp"
 
-std::shared_ptr<TestProgressDto> ProgressService::saveProgress(
+oatpp::Object<TestProgressDto> ProgressService::saveProgress(
     const oatpp::String& userId,
     const oatpp::String& testId,
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+    const std::map<std::string, std::vector<std::string>>& userAnswers,
     int timeSpentSeconds
 ) {
     std::string answersJson = JsonUtils::serializeAnswersToJson(userAnswers);
@@ -31,7 +32,7 @@ std::shared_ptr<TestProgressDto> ProgressService::saveProgress(
     return dto;
 }
 
-std::shared_ptr<TestProgressDto> ProgressService::getProgress(
+oatpp::Object<TestProgressDto> ProgressService::getProgress(
     const oatpp::String& userId,
     const oatpp::String& testId
 ) {
@@ -47,9 +48,9 @@ std::shared_ptr<TestProgressDto> ProgressService::getProgress(
     return nullptr;
 }
 
-std::shared_ptr<TestProgressDto> ProgressService::updateProgress(
+oatpp::Object<TestProgressDto> ProgressService::updateProgress(
     const oatpp::String& progressId,
-    const std::map<oatpp::String, std::vector<oatpp::String>>& userAnswers,
+    const std::map<std::string, std::vector<std::string>>& userAnswers,
     int timeSpentSeconds
 ) {
     auto existingEntity = userTestProgressRepository_->getProgressById(progressId);
@@ -70,5 +71,18 @@ std::shared_ptr<TestProgressDto> ProgressService::updateProgress(
     auto savedEntity = userTestProgressRepository_->updateProgress(progressId, updatedProgress);
 
     auto dto = convertToDto(savedEntity);
+    return dto;
+}
+
+oatpp::Object<TestProgressDto> ProgressService::convertToDto(const UserTestProgressEntity& entity) {
+    auto dto = TestProgressDto::createShared();
+    dto->id = entity.id;
+    dto->testId = entity.testId;
+    dto->status = entity.status;
+    dto->score = entity.score;
+    dto->percentage = entity.percentage;
+    dto->timeSpentSeconds = entity.timeSpentSeconds;
+    dto->startedAt = entity.startedAt;
+    dto->completedAt = entity.completedAt;
     return dto;
 }
