@@ -45,6 +45,8 @@ set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
 set(OATPP_BUILD_TESTS OFF CACHE BOOL "Build Oat++ tests" FORCE)
 set(OATPP_SWAGGER_BUILD_TESTS OFF CACHE BOOL "Build Oat++ Swagger tests" FORCE)
 set(OATPP_POSTGRESQL_BUILD_TESTS OFF CACHE BOOL "Build Oat++ PostgreSQL tests" FORCE)
+set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "disable building examples" FORCE)
+set(JWT_BUILD_TESTS OFF CACHE BOOL "disable building tests" FORCE)
 
 # Always use FetchContent for oatpp to ensure correct architecture and get oatpp-test
 include(FetchContent)
@@ -165,17 +167,40 @@ endif()
 # Project Structure
 # ============================================
 
+# ============================================
+# JWT from jwt-cpp
+# ============================================
+
+FetchContent_Declare(
+    jwt-cpp
+    GIT_REPOSITORY https://github.com/Thalhammer/jwt-cpp.git
+    GIT_TAG 08bcf77a687fb06e34138e9e9fa12a4ecbe12332
+)
+
+FetchContent_GetProperties(jwt-cpp)
+if(NOT jwt-cpp_POPULATED)
+    FetchContent_Populate(jwt-cpp)
+    # Set variables before adding subdirectory
+    set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "Build jwt-cpp examples" FORCE)
+    set(JWT_BUILD_TESTS OFF CACHE BOOL "Build jwt-cpp tests" FORCE)
+    add_subdirectory(${jwt-cpp_SOURCE_DIR} ${jwt-cpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # Include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
 )
 
 # Collect all source files
+# Use GLOB_RECURSE but filter out files from dependencies (_deps directory)
 file(GLOB_RECURSE SOURCES
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_SOURCE_DIR}/main.cpp"
 )
+# Filter out any files from _deps (dependencies)
+list(FILTER SOURCES EXCLUDE REGEX ".*/_deps/.*")
 
+# Recursively collect headers from include directory only
 file(GLOB_RECURSE HEADERS
     "${CMAKE_SOURCE_DIR}/include/*.hpp"
 )
@@ -209,6 +234,8 @@ target_link_libraries(${PROJECT_NAME}
     oatpp-postgresql
     PRIVATE
     ${HIREDIS_LIBRARIES}
+    PRIVATE
+    jwt-cpp::jwt-cpp
 )
 
 target_include_directories(${PROJECT_NAME}
