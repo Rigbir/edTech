@@ -67,6 +67,8 @@ void AppConfig::loadFromEnvironment() {
     }
 
     logLevel_ = getEnvOrDefault("LOG_LEVEL", "INFO");
+
+    jwtSecretKey_ = getEnvOrDefault("JWT_SECRET_KEY", "");
 }
 
 // =========================    
@@ -138,4 +140,8 @@ bool AppConfig::validate() const {
            !databaseName_.empty() &&
            !databaseUserName_.empty() &&
            !logLevel_.empty();
+}
+
+std::string AppConfig::getJwtSecretKey() const {
+    return jwtSecretKey_;
 }

@@ -17,7 +17,7 @@ public:
         const oatpp::String& role
     ) const;
 
-    oatpp::String validateToken(const std::stirng& token) const;
+    oatpp::String validateToken(const std::string& token) const;
 
 private:
     std::string secretKey_;

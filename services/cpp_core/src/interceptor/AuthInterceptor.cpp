@@ -2,12 +2,18 @@
 // Created by Rigbir on 02.12.25.
 //
 
-#include "interceptor/AuthInterceptor.hpp"
 #include <oatpp/web/protocol/http/outgoing/ResponseFactory.hpp>
+#include "interceptor/AuthInterceptor.hpp"
+#include "config/AppConfig.hpp"
 #include <jwt-cpp/jwt.h>
 
-AuthInterceptor::AuthInterceptor() {
+AuthInterceptor::AuthInterceptor()
+    : authService_(std::make_unique<AuthService>(
+        AppConfig::getInstance().getJwtSecretKey()
+    ))
+{
     publicEndpoints_.insert("/health");
+    publicEndpoints_.insert("/api/auth/login");
     publicEndpoints_.insert("/api/tests/published");
     publicEndpoints_.insert("/api/tests");
 }
@@ -64,5 +70,5 @@ oatpp::String AuthInterceptor::extractToken(
 }
 
 oatpp::String AuthInterceptor::validateToken(const oatpp::String& token) const {
-    return nullptr;
+    return authService_->validateToken(token->c_str());
 }

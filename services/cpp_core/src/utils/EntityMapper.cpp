@@ -106,6 +106,30 @@ TestEntity EntityMapper::mapTest(
     return entity;
 }
 
+UserEntity EntityMapper::mapUser(
+    const oatpp::Vector<oatpp::Fields<oatpp::Any>>& rows,
+    size_t rowIndex
+) {
+    auto row = rows[rowIndex];
+    UserEntity entity;
+    
+    entity.id = row["id"].retrieve<oatpp::String>();
+    entity.email = row["email"].retrieve<oatpp::String>();
+    entity.passwordHash = row["password_hash"].retrieve<oatpp::String>();
+    entity.username = row["username"].retrieve<oatpp::String>();
+    entity.role = row["role"].retrieve<oatpp::String>();
+    entity.firstName = row["first_name"].retrieve<oatpp::String>();
+    entity.lastName = row["last_name"].retrieve<oatpp::String>();
+    entity.avatarUrl = row["avatar_url"].retrieve<oatpp::String>();
+    entity.isActive = row["is_active"].retrieve<oatpp::Boolean>();
+    entity.emailVerified = row["email_verified"].retrieve<oatpp::Boolean>();
+    entity.createdAt = row["created_at"].retrieve<oatpp::Int64>();
+    entity.updatedAt = row["updated_at"].retrieve<oatpp::Int64>();
+    entity.lastLoginAt = row["last_login_at"].retrieve<oatpp::Int64>();
+
+    return entity;
+}
+
 UserTestProgressEntity EntityMapper::mapUserTestProgress(
     const oatpp::Vector<oatpp::Fields<oatpp::Any>>& rows,
     size_t rowIndex

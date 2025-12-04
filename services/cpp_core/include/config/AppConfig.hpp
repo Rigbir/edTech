@@ -33,6 +33,8 @@ public:
 
     bool validate() const;
 
+    std::string getJwtSecretKey() const;
+
 private:
     AppConfig();
     AppConfig(const AppConfig&) = delete;
@@ -65,4 +67,6 @@ private:
 
     // Logging configuration
     std::string logLevel_;
+
+    std::string jwtSecretKey_;
 };

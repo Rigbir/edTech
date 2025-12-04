@@ -5,6 +5,7 @@
 #pragma once
 
 #include <oatpp/web/server/interceptor/RequestInterceptor.hpp>
+#include "service/AuthService.hpp"
 #include <oatpp/core/Types.hpp>
 #include <unordered_set>
 #include <string>
@@ -35,4 +36,7 @@ private:
         const std::shared_ptr<oatpp::web::protocol::http::incoming::Request>& request
     ) const;
     oatpp::String validateToken(const oatpp::String& token) const;
+
+private:
+    std::unique_ptr<AuthService> authService_;
 };

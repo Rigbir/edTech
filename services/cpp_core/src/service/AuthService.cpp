@@ -15,12 +15,16 @@ std::string AuthService::generateToken(
     const oatpp::String& email,
     const oatpp::String& role
 ) const {
+    std::string userIdStr = userId ? userId->c_str() : "";
+    std::string emailStr = email ? email->c_str() : "";
+    std::string roleStr = role ? role->c_str() : "";
+    
     auto token = jwt::create()
         .set_issuer("edTech")
         .set_type("JWT")
-        .set_payload_claim("userId", jwt::claim(userId->c_str()))
-        .set_payload_claim("email", jwt::claim(email->c_str()))
-        .set_payload_claim("role", jwt::claim(role->c_str()))
+        .set_payload_claim("userId", jwt::claim(userIdStr))
+        .set_payload_claim("email", jwt::claim(emailStr))
+        .set_payload_claim("role", jwt::claim(roleStr))
         .set_issued_at(std::chrono::system_clock::now())
         .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours{24})
         .sign(jwt::algorithm::hs256{secretKey_});

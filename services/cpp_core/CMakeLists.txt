@@ -167,10 +167,6 @@ endif()
 # endif()
 
 # ============================================
-# Project Structure
-# ============================================
-
-# ============================================
 # JWT from jwt-cpp
 # ============================================
 
@@ -201,6 +197,32 @@ include_directories(
 if(DEFINED jwt-cpp_SOURCE_DIR)
     include_directories(SYSTEM ${jwt-cpp_SOURCE_DIR}/include)
 endif()
+
+# ============================================
+# libbcrypt (C++ wrapper for bcrypt password hashing)
+# ============================================
+
+FetchContent_Declare(
+    libbcrypt
+    GIT_REPOSITORY https://github.com/trusch/libbcrypt.git
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(libbcrypt)
+
+# Debug: Print libbcrypt location
+if(DEFINED libbcrypt_SOURCE_DIR)
+    message(STATUS "libbcrypt source directory: ${libbcrypt_SOURCE_DIR}")
+endif()
+
+# Add libbcrypt to include directories at project level for better IDE support
+if(DEFINED libbcrypt_SOURCE_DIR)
+    include_directories(SYSTEM ${libbcrypt_SOURCE_DIR}/include)
+endif()
+
+# libbcrypt builds its own library, so we can use it directly
+# The library target is named 'bcrypt' (from project name in libbcrypt's CMakeLists.txt)
+set(BCRYPT_FOUND TRUE)
 
 # Collect all source files
 # Use GLOB_RECURSE but filter out files from dependencies (_deps directory)
@@ -264,6 +286,15 @@ else()
     message(WARNING "jwt-cpp::jwt-cpp target not found! Check jwt-cpp configuration.")
 endif()
 
+# Link bcrypt library (built from FetchContent)
+if(BCRYPT_FOUND AND TARGET bcrypt)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        bcrypt
+    )
+    message(STATUS "Linked bcrypt library from FetchContent")
+endif()
+
 # Add library directories for hiredis if found via pkg-config
 if(DEFINED HIREDIS_LIBRARY_DIRS)
     link_directories(${HIREDIS_LIBRARY_DIRS})
@@ -313,5 +344,11 @@ if(DEFINED HIREDIS_INCLUDE_DIRS)
 endif()
 if(DEFINED jwt-cpp_SOURCE_DIR)
     message(STATUS "jwt-cpp: ${jwt-cpp_SOURCE_DIR}/include")
+endif()
+if(DEFINED libbcrypt_SOURCE_DIR)
+    message(STATUS "libbcrypt: ${libbcrypt_SOURCE_DIR}/include")
+endif()
+if(BCRYPT_FOUND AND TARGET bcrypt)
+    message(STATUS "bcrypt library: built from FetchContent")
 endif()
 message(STATUS "============================")
