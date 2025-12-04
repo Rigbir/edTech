@@ -130,6 +130,29 @@ UserEntity EntityMapper::mapUser(
     return entity;
 }
 
+UserStatisticsEntity EntityMapper::mapUserStatistics(
+    const oatpp::Vector<oatpp::Fields<oatpp::Any>>& rows,
+    size_t rowIndex
+) {
+    auto row = rows[rowIndex];
+    UserStatisticsEntity entity;
+
+    entity.id = row["id"].retrieve<oatpp::String>();
+    entity.userId = row["user_id"].retrieve<oatpp::String>();
+    entity.subjectId = row["subject_id"].retrieve<oatpp::String>();
+    entity.testsCompleted = row["tests_completed"].retrieve<oatpp::Int32>();
+    entity.testsStarted = row["tests_started"].retrieve<oatpp::Int32>();
+    entity.totalScore = row["total_score"].retrieve<oatpp::Int32>();
+    entity.averageScore = row["average_score"].retrieve<oatpp::Float32>();
+    entity.bestScore = row["best_score"].retrieve<oatpp::Int32>();
+    entity.totalTimeSpentSeconds = row["total_time_spent_seconds"].retrieve<oatpp::Int32>();
+    entity.lastActivityAt = row["last_activity_at"].retrieve<oatpp::Int64>();
+    entity.createdAt = row["created_at"].retrieve<oatpp::Int64>();
+    entity.updatedAt = row["updated_at"].retrieve<oatpp::Int64>();
+
+    return entity;
+}
+
 UserTestProgressEntity EntityMapper::mapUserTestProgress(
     const oatpp::Vector<oatpp::Fields<oatpp::Any>>& rows,
     size_t rowIndex
