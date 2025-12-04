@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Generate compile_commands.json for IDE support
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Set policy version minimum for dependencies
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Minimum CMake policy version for subprojects")
 
@@ -177,19 +180,27 @@ FetchContent_Declare(
     GIT_TAG 08bcf77a687fb06e34138e9e9fa12a4ecbe12332
 )
 
-FetchContent_GetProperties(jwt-cpp)
-if(NOT jwt-cpp_POPULATED)
-    FetchContent_Populate(jwt-cpp)
-    # Set variables before adding subdirectory
-    set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "Build jwt-cpp examples" FORCE)
-    set(JWT_BUILD_TESTS OFF CACHE BOOL "Build jwt-cpp tests" FORCE)
-    add_subdirectory(${jwt-cpp_SOURCE_DIR} ${jwt-cpp_BINARY_DIR} EXCLUDE_FROM_ALL)
+# Set variables before MakeAvailable
+set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "Build jwt-cpp examples" FORCE)
+set(JWT_BUILD_TESTS OFF CACHE BOOL "Build jwt-cpp tests" FORCE)
+
+FetchContent_MakeAvailable(jwt-cpp)
+
+# Debug: Print jwt-cpp location
+if(DEFINED jwt-cpp_SOURCE_DIR)
+    message(STATUS "jwt-cpp source directory: ${jwt-cpp_SOURCE_DIR}")
 endif()
 
 # Include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
 )
+
+# Add jwt-cpp to include directories at project level for better IDE support
+# This helps CLion and other IDEs to find headers even before target is fully configured
+if(DEFINED jwt-cpp_SOURCE_DIR)
+    include_directories(SYSTEM ${jwt-cpp_SOURCE_DIR}/include)
+endif()
 
 # Collect all source files
 # Use GLOB_RECURSE but filter out files from dependencies (_deps directory)
@@ -225,6 +236,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS}
 target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_SWAGGER_RES_PATH="${OATPP_SWAGGER_RES_PATH}")
 
 # When using FetchContent with add_subdirectory, use 'oatpp' not 'oatpp::oatpp'
+# Try to use jwt-cpp interface library if available, otherwise use include directories
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
     oatpp
@@ -234,14 +246,23 @@ target_link_libraries(${PROJECT_NAME}
     oatpp-postgresql
     PRIVATE
     ${HIREDIS_LIBRARIES}
-    PRIVATE
-    jwt-cpp::jwt-cpp
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
     ${HIREDIS_INCLUDE_DIRS}
 )
+
+# Link jwt-cpp - jwt-cpp creates target jwt-cpp::jwt-cpp automatically
+if(TARGET jwt-cpp::jwt-cpp)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        jwt-cpp::jwt-cpp
+    )
+    message(STATUS "Linked jwt-cpp::jwt-cpp interface library")
+else()
+    message(WARNING "jwt-cpp::jwt-cpp target not found! Check jwt-cpp configuration.")
+endif()
 
 # Add library directories for hiredis if found via pkg-config
 if(DEFINED HIREDIS_LIBRARY_DIRS)
@@ -289,5 +310,8 @@ if(DEFINED oatpp-swagger_SOURCE_DIR)
 endif()
 if(DEFINED HIREDIS_INCLUDE_DIRS)
     message(STATUS "Hiredis: ${HIREDIS_INCLUDE_DIRS}")
+endif()
+if(DEFINED jwt-cpp_SOURCE_DIR)
+    message(STATUS "jwt-cpp: ${jwt-cpp_SOURCE_DIR}/include")
 endif()
 message(STATUS "============================")
